@@ -1,0 +1,3 @@
+astroid==1.6.6
+blinkpy==0.4.2
+opencv-python
