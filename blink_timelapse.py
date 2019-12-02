@@ -61,14 +61,15 @@ def daytime_timelapse(output_path_prefix, frequency, blink):
   path_prefix = create_output_dirs(output_path_prefix, blink)
   if now() <= sunrise:
     log.info("Current time {} is before sunrise {}".format(now(), sunrise))
-    #return path_prefix
+    return path_prefix
   log.info('starting daytime timelapse capture')
   printcounter = 0
   per_camera_sleep = min(frequency/len(blink.cameras), 30)
-  return path_prefix
+
   while True:
     if now() >= sunset:
-       break
+        log.info("Stopping daytime timelapse capture as current time is {} and sunset is {}".format(now(), sunset))
+        break
     snap_pictures(path_prefix, blink, per_camera_sleep)
     printcounter += 1
     if (printcounter%1000) == 0:
@@ -87,7 +88,9 @@ def process_images(image_dir):
 
     images = [img for img in os.listdir(image_dir) if img.endswith(".jpg")]
     images = sorted(images)
-
+    if len(images) == 0:
+        log.info('No images found while attempting to convert images to a timelapse video')
+        return
     frame = cv2.imread(os.path.join(image_dir, images[0]))
     height, width, layers = frame.shape
     fourcc = cv2.VideoWriter_fourcc('a','v','c','1')
@@ -111,8 +114,8 @@ def get_input_args():
         log.error('Set PASSWORD environment variable')
         return []
     if frequency <= 0:
-        log.error('Set FREQ_SECONDS environment variable')
-        return []
+        frequency = 30
+        log.error('Seting capture frequency to 30 seconds')
     if output_dir == "":
         log.error('Set OUTPUT_DIR environment variable')
         return []
